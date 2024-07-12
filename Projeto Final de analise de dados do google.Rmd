@@ -1,0 +1,347 @@
+---
+title: "Projeto_Final_Analise_de_Dados_Google"
+author: "Marcos Vinicius da Silva"
+date: "2024-07-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Este é um documento R Markdown. Markdown é uma sintaxe de formatação simples para criação de documentos HTML, PDF e MS Word. Para obter mais detalhes sobre o uso do R Markdown, consulte <http://rmarkdown.rstudio.com>.
+
+Quando você clica no botão **Knit**, será gerado um documento que inclui tanto o conteúdo quanto a saída de quaisquer pedaços de código R incorporados no documento. Você pode incorporar um pedaço de código R como este:down.rstudio.com>.
+
+## Qual é o problema que estamos tentando resolver?
+
+O problema que estamos tentando resolver é entender como os consumidores utilizam dispositivos inteligentes que não são da Bellabeat, para aplicar esses insights na melhoria de um produto específico da Bellabeat, com o objetivo de otimizar a estratégia de marketing e aumentar a competitividade da empresa no mercado.
+
+## Como os insights podem nortear as decisões de negócios?
+
+Os insights sobre o uso de dispositivos inteligentes  podem nortear as decisões de negócios da Bellabeat ao destacar a importância de funcionalidades abrangentes de monitoramento de saúde e conectividade prática, além de enfatizar o design elegante. Isso pode orientar o desenvolvimento de novos produtos, a melhora de um produto, estratégias de marketing e a expansão do portfólio para melhor atender às necessidades e preferências dos consumidores.
+
+## Tarefa de negócios
+
+A tarefa de negócios envolve analisar dados de uso de dispositivos inteligentes não pertencentes à Bellabeat para identificar tendências relevantes e aplicar insights na estratégia de marketing de um produto Bellabeat. O objetivo é melhorar a posição da empresa no mercado de dispositivos inteligentes voltados para a saúde feminina.
+
+## Principais partes interessadas
+
+Clientes:
+Usuários atuais e potenciais dos produtos Bellabeat, incluindo o Leaf, Time, Spring e o aplicativo Bellabeat, que se beneficiam das funcionalidades de monitoramento de saúde e bem-estar.
+
+Urška Sršen:
+Cofundadora e CEO da Bellabeat, interessada em utilizar a análise de dados para descobrir novas oportunidades de crescimento e aprimorar a estratégia de marketing da empresa.
+
+Sando Mur:
+Matemático e cofundador da Bellabeat, membro-chave da equipe executiva, envolvido na tomada de decisões estratégicas baseadas nos insights de dados.
+
+Equipe de Análise de Marketing da Bellabeat:
+Analistas de dados responsáveis por coletar, processar e analisar os dados de uso de dispositivos inteligentes, visando orientar a estratégia de marketing da Bellabeat
+
+Equipe de Desenvolvimento de Produtos:
+Engenheiros e designers que usam os insights de dados para melhorar as funcionalidades e a usabilidade dos produtos Bellabeat, garantindo que atendam às necessidades e preferências dos consumidores.
+
+Acionistas e Investidores:
+Interessados no crescimento, na rentabilidade e na competitividade da Bellabeat no mercado global de dispositivos inteligentes.
+
+Parceiros Comerciais:
+Distribuidores, varejistas e outros parceiros envolvidos na venda e promoção dos produtos Bellabeat, que dependem de produtos competitivos e bem aceitos pelo mercado para impulsionar as vendas.
+
+## Tarefa de negócios
+
+A tarefa de negócios consiste em analisar dados de uso de dispositivos inteligentes para identificar tendências e comportamentos dos consumidores que utilizam produtos que não são da Bellabeat. Com base nesses insights, a Bellabeat poderá ajustar e aprimorar suas estratégias de marketing para um de seus produtos, visando aumentar sua participação no mercado de dispositivos inteligentes voltados para a saúde das mulheres.
+
+## Sobre os Dados
+
+Os dados originais são varios arquivos CSV que amazenam dados de atividades assim como passos, calorias e intensidade peso, frequencia cardiaca e sono  organizados por segundos, minutos, horas, dias, os mesmos foram armazenados na nuvem em pastas distintas  chamadas "Fitabase Data 4.12.16-5.12.16" e "Fitabase Data 3.12.16-4.11.16", os mesmos seram utilizados para se criar data frames especificos.
+
+```{r}
+atividade_diaria <- read.csv("Projeto Final/Fitabase Data 4.12.16-5.12.16/dailyActivity_merged.csv")
+head(atividade_diaria)
+```
+```{r}
+dia_sono_mesclado <- read.csv("Projeto Final/Fitabase Data 4.12.16-5.12.16/sleepDay_merged.csv")
+head(dia_sono_mesclado)
+```
+```{r importando e carregando os pacotes principais}
+install.packages("tidyverse")
+install.packages("ggplot2")
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(cluster)
+```
+```{r A função colnames posso explorar as colulas dos data frames}
+colnames(atividade_diaria)
+colnames(dia_sono_mesclado)
+```
+
+```{r Verificando quantos participantes unicos existem em cada dataframe}
+n_distinct(atividade_diaria$Id)
+n_distinct(dia_sono_mesclado$Id)
+```
+```{r Verificando quantas observações existem em cada dataframe}
+nrow(atividade_diaria)
+nrow(dia_sono_mesclado)
+```
+
+
+```{r verificando valores ausentes em cada dataframe}
+sum(is.na(atividade_diaria))
+sum(is.na(dia_sono_mesclado))
+```
+
+
+```{r verificando valores duplicados em cada dataframe }
+sum(duplicated(atividade_diaria))
+sum(duplicated(dia_sono_mesclado))
+```
+
+
+```{r  verificando a estrutura dos dados com a função str, uma visão geral rapida(para facilitar o processamento será executada uma de cada vez.)}
+str(atividade_diaria)
+str(dia_sono_mesclado)
+```
+
+```{r tambem posso utilizar a funcção glimpse para obter uma visualização rápida e compacta da estrutura de um dataframe, bem semelhante ao str mas com uma apresentação mais legível e amigável}
+glimpse(atividade_diaria)
+glimpse(dia_sono_mesclado)
+```
+
+```{r verificando algumas estatísticas de resumo rápido que gostaríamos de saber sobre o data frame atividade_diaria}
+
+atividade_diaria %>%  
+  select(TotalSteps,
+         TotalDistance,
+         SedentaryMinutes) %>%
+  summary()
+```
+
+
+```{r verificando algumas estatísticas de resumo rápido que gostaríamos de saber sobre o data frame dia_sono_mesclado}
+dia_sono_mesclado %>%  
+  select(TotalSleepRecords,
+  TotalMinutesAsleep,
+  TotalTimeInBed) %>%
+  summary()
+```
+
+## O que isso nos diz sobre como esta amostra das atividades das pessoas?
+
+Com base nas informações dos dataframes atividade_diaria e dia_sono_mesclado, podemos destacar alguns pontos:
+
+Há 33 participantes únicos registrados no dataframe atividade_diaria e 24 no dataframe dia_sono_mesclado. Isso sugere que nem todos os participantes têm registros diários de atividade e sono para cada período observado.
+
+Não foram encontrados valores ausentes no atividade_diaria e há 3 linhas duplicadas no dia_sono_mesclado.
+
+O dataframe atividade_diaria possui 940 observações com 15 variáveis, enquanto o dia_sono_mesclado tem 413 observações com 5 variáveis. Ambos os dataframes estão estruturados com tipos de dados apropriados para análise (por exemplo, datas como caracteres e números para medidas físicas e de sono).
+
+Resumo Estatístico:
+
+atividade_diaria: A média de passos diários é de aproximadamente 7638, com uma média de 991 minutos sedentários por dia.
+
+dia_sono_mesclado: A maioria dos participantes registra um único período de sono por dia, com uma média de tempo de sono de cerca de 419 minutos e tempo na cama de 458 minutos.
+
+Essas informações preliminares nos ajudam a entender a distribuição e a estrutura dos dados coletados sobre atividade física e sono dos participantes, fornecendo uma base para análises mais detalhadas sobre os padrões de comportamento e saúde relacionados.
+
+## problemas com viés ou credibilidade
+
+Com base na análise inicial, os dados não mostram problemas evidentes de viés ou credibilidade, embora seja necessário considerar a representatividade da amostra e a consistência na coleta e registro dos dados para uma análise robusta.
+
+## Licenciamento, Privacidade, Segurança e  Acessibilidade
+
+Licenciamento
+Todos os dados e softwares utilizados são "open data" e "open soucer" com isso são livres das licenças apropriadas respeitando os termos de licenças.
+
+Privacidade
+Os dados foram coletados com autorização preservando informações pessoais identificáveis e garantindo que foram obtidos com consentimento explícito, em conformidade com a LGPD.
+
+Segurança
+Proteção e Controle de Acesso: Foi armazenado os dados em servidores de nuvem seguros e criptografados, restringindo o acesso apenas aos analistas responsáveis, utilizando autenticação adequada.
+
+Acessibilidade
+Interface Amigável e Treinamento: Foi adote padrões de acessibilidade nas ferramentas e documentos e forneça treinamento adequado à equipe para promover um ambiente inclusivo e acessível a todos os membros.
+
+## Integirdade dos dados
+
+Foram verificados se existem dados ausentes, ou duplicados e verificando valores anômalos (outliers), certificando que os dados são consistentes entre diferentes fontes e dentro da mesma fonte, além de validado os tipos de dados, seus intervalos, possíveis erros de digitação. Seguindo esses passos garantimos que essas informações ajudam a garantir que os dados analisados são seguros, bem-organizados e confiáveis, o que é fundamental para obter insights precisos sobre o uso de dispositivos inteligentes. A utilização de um ambiente seguro e regulamentado, como o R Studio, assegura que a análise será conduzida de maneira eficiente e em conformidade com os requisitos de proteção de dados. Isso contribui diretamente para a precisão e relevância dos insights gerados, que irão nortear a estratégia de marketing da Bellabeat. 
+
+## Descrição de todas as fontes de dados usadas
+
+Os dados utilizados nessa analise foram os dados de dispositivos inteligentes a seguir:
+
+dailyActivity_merged.csv - dados sobre a atuvidade diaria.
+sleepDay_mergerd.csv - dados sobre o sono diario 
+
+## Traçando algumas explorações
+
+Qual é a relação entre os passos dados num dia e os minutos sedentários? 
+
+```{r}
+ggplot(data=atividade_diaria, aes(x=TotalSteps, y=SedentaryMinutes, color=TotalSteps)) + 
+  geom_point()
+
+```
+Este gráfico de dispersão mostra a relação entre o número total de passos dados por dia e o tempo sedentário em minutos. Ele permite visualizar se há alguma tendência entre essas duas variáveis: se mais passos estão associados a menos tempo sedentário ou não.
+
+Como isso poderia ajudar a informar os segmentos de clientes para os quais podemos comercializar?
+
+A análise da relação entre passos dados e tempo sedentário pode ajudar a identificar diferentes perfis de clientes com base em seus níveis de atividade física, permitindo estratégias de marketing mais direcionadas e personalizadas. Isso facilita o desenvolvimento de produtos, serviços e mensagens que atendam às necessidades específicas de cada segmento, aumentando a eficácia das campanhas de marketing.
+
+Essa análise pode ser utilizada tanto para encorajar os clientes a começarem a caminhar mais, destacando os benefícios de reduzir o tempo sedentário, quanto para medir e celebrar os passos que eles já estão dando, reforçando hábitos saudáveis e incentivando um estilo de vida ativo.
+
+
+Qual é a relação entre minutos dormindo e tempo na cama?
+
+```{r}
+ggplot(data=dia_sono_mesclado, aes(x=TotalMinutesAsleep, y=TotalTimeInBed)) + geom_point()
+```
+
+Esse gráfico de dispersão entre TotalMinutesAsleep (minutos dormindo) e TotalTimeInBed (tempo na cama) mostra  que a relação esperada de mais tempo na cama geralmente está associado a mais minutos dormindo, refletindo padrões de sono adequados. Variações significativas ou agrupamentos anômalos podem indicar diferentes comportamentos de sono que exigem investigação adicional para entender seus impactos na saúde e bem-estar dos indivíduos.
+
+O que essas tendências poderiam lhe dizer sobre como ajudar a comercializar este produto?
+
+As tendências identificadas no gráfico de dispersão entre TotalMinutesAsleep e TotalTimeInBed podem guiar estratégias de marketing ao segmentar consumidores com diferentes hábitos de sono, desenvolver produtos que atendam às suas necessidades específicas de sono e criar campanhas educativas e informativas sobre a importância da qualidade do sono e a utilização eficiente do tempo na cama. Essas informações permitem uma abordagem mais personalizada e direcionada para promover melhorias na saúde e bem-estar dos consumidores através de soluções relacionadas ao sono.
+
+
+
+## Mesclando esses dois conjuntos de dados
+
+```{r}
+dados_combinados <- merge(dia_sono_mesclado, atividade_diaria, by="Id")
+```
+
+Olhando quantos participantes estão neste conjunto de dados.
+```{r}
+n_distinct(dados_combinados$Id)
+```
+Como havia mais IDs de de participantes no conjunto de dados de atividades diárias que foram filtrados usando a mesclagem. o idela seria fazer uma filtragem utilizanod outer_join para assim todos os dados estarem no conjunto de dados.
+```{r}
+dados_combinados <- merge(dia_sono_mesclado, atividade_diaria, by = "Id", all = TRUE)
+```
+Neste caso, merge() com all = TRUE realiza um outer join nos data frame "dia_sono_mesclado" e "atividade_diaria"  
+
+```{r Verificando quantos participantes unicos existem}
+n_distinct(dados_combinados$Id)
+```
+```{r verificando valores ausentes }
+sum(is.na(dados_combinados))
+```
+
+```{r Substituindo valores ausentes por zero}
+dados_combinados <- dados_combinados %>%
+  mutate_all(~ ifelse(is.na(.), 0, .))
+```
+
+```{r verificando novamente valores ausentes }
+sum(is.na(dados_combinados))
+```
+
+```{r Verificando quantos participantes unicos existem}
+n_distinct(dados_combinados$Id)
+```
+
+```{r}
+ggplot(data = dados_combinados, aes(x = TotalSteps, y = SedentaryMinutes, shape = factor(TotalSleepRecords), color = factor(TotalSleepRecords))) +
+  geom_point() +
+  labs(title = "Relação entre Passos Dados e Minutos Sedentários",
+       x = "Total de Passos",
+       y = "Minutos Sedentários",
+       shape = "Registros de Sono",
+       color = "Registros de Sono")
+```
+Esse gráfico mostra a relação entre o número total de passos dados e os minutos sedentários para os participantes, diferenciados pelo número de registros de sono. Cada ponto no gráfico representa um participante, onde: 
+O eixo x representa o total de passos dados em um dia.
+O eixo y representa o total de minutos sedentários em um dia.
+A cor e o formato dos pontos são usados para distinguir diferentes números de registros de sono (TotalSleepRecords), proporcionando uma visualização das distribuições dessas variáveis e qualquer padrão ou agrupamento que possa existir entre elas.
+
+
+```{r Calculando a correlação entre TotalMinutesAsleep e TotalSteps}
+correlacao_sono_atividade <- cor(dados_combinados$TotalMinutesAsleep, dados_combinados$TotalSteps)
+correlacao_sono_atividade
+```
+com esse calculo eu tenho a correlação  entre o tempo total de sono e o número total de passos. no caso quanto mais proximo a 1 indica uma corelação positiva forte( se uma aumenta a outra tambem aumenta), quanto mais proximo a -1 indica uma corelação negativa forte(se uma aumenta a outra diminui), caso procimo de 0 indica ausência de correlação linear.
+
+
+Utilizando técnicas de análise de cluster, eu posso seguimentar os clientes com base nos insights obtidos sobre o sono e a atividade física. 
+
+```{r Selecionando variáveis relevantes}
+cluster_dados <- dados_combinados %>%
+  select(Id, TotalMinutesAsleep, TotalSteps)
+```
+
+
+```{r}
+cluster_dados_scalados <- scale(cluster_dados[, c("TotalMinutesAsleep", "TotalSteps")])
+```
+
+```{r verificando dados nulos}
+sum(is.na(cluster_dados_scalados))
+```
+
+
+```{r Aplicando K-means para segmentação em 3 clusters}
+set.seed(123)  
+kmeans_fit <- kmeans(cluster_dados_scalados, centers = 3, nstart = 25)
+```
+
+
+```{r Adicionando os clusters de volta ao dataframe original}
+cluster_dados$cluster <- kmeans_fit$cluster
+```
+
+```{r  Visualização dos clusters}
+ggplot(cluster_dados, aes(x = TotalSteps, y = TotalMinutesAsleep, color = factor(cluster))) +
+  geom_point() +
+  labs(title = "Segmentação de Clientes: Sono vs Atividade Física",
+       x = "Total de Passos",
+       y = "Total de Minutos Dormidos",
+       color = "Cluster") +
+  theme_minimal()
+```
+Esse gráfico mostra a relação entre o total de passos dados (no eixo x) e o total de minutos dormidos (no eixo y), com pontos coloridos por cluster. Cada ponto representa um cliente, onde a cor indica a qual cluster ele pertence. Isso permite visualizar como os clientes estão distribuídos em relação à atividade física (passos dados) e ao sono, identificando padrões ou agrupamentos distintos entre os clusters definidos pelo modelo K-means. Isso pode informar como segmentar estrategicamente a campanha de marketing.
+
+Se identificarmos que clientes que dormem menos tendem a ser mais ativos, podemos posicionar o produto como uma maneira de maximizar os benefícios do sono e da atividade física.
+
+Se encontrarmos que clientes que dormem mais também são ativos, poderíamos enfatizar como o produto pode ajudar a manter ou melhorar esses níveis de atividade.
+
+Compreender essas relações permite adaptar as mensagens de marketing para diferentes segmentos de clientes. Por exemplo, oferecer dicas personalizadas ou incentivos que promovam um estilo de vida mais saudável, destacando como o produto pode integrar-se a rotinas já existentes.
+
+Analisando o gráfico acima percebemos que os clientes do cluster 1 costumam dormir mais minutos e da mais passos. Já os clientes do cluster 2 costumam dormi menos e dar mais passos, mas tem casos que dormem menos e ainda dão menos passos. Já os clientes do cluster 3 costumam dormir mais e dar menos passos.
+
+
+## Respondendo as perguntas 
+
+Quais são algumas das tendências no uso de dispositivos inteligentes?
+
+
+Os usuários de dispositivos inteligentes tendem a monitorar passos diários, qualidade do sono, e reduzir o tempo sedentário, além de acompanhar a saúde mental e a ingestão de água. A personalização das metas e a integração com aplicativos são características valorizadas. Essas tendências indicam uma crescente preocupação com uma abordagem holística da saúde, englobando atividade física, sono, saúde mental e hábitos de hidratação.
+
+Como essas tendências podem se aplicar aos clientes da Bellabeat?
+
+Essas tendências podem ajudar a Bellabeat a desenvolver e comercializar produtos que incentivem a atividade física, melhorem a qualidade do sono e promovam a saúde mental e a hidratação. A personalização e a integração com aplicativos podem atrair clientes que buscam soluções de saúde holísticas e ajustáveis às suas necessidades individuais. Adaptando seus produtos a essas tendências, a Bellabeat pode oferecer um valor diferenciado aos consumidores, impulsionando seu crescimento no mercado de dispositivos inteligentes
+
+Como essas tendências podem ajudar a influenciar a estratégia de marketing da Bellabeat?
+
+Essas tendências podem orientar a Bellabeat a focar suas campanhas de marketing em promover a personalização, integração com aplicativos e abordagem holística da saúde. Destacar funcionalidades que incentivam a atividade física, melhoram a qualidade do sono e promovem a saúde mental e a hidratação pode atrair consumidores preocupados com o bem-estar integral. Isso permitirá à Bellabeat posicionar seus produtos como soluções completas para um estilo de vida saudável.
+
+
+## conclusão
+
+Com base na análise dos dados dos dispositivos inteligentes e na aplicação do algoritmo de clusterização (K-means), algumas conclusões podem ser destacadas:
+
+Identificamos três grupos distintos de clientes com base nos padrões de sono e atividade física. Cada cluster apresenta características únicas que podem ser exploradas pela Bellabeat para personalizar suas estratégias de marketing e desenvolvimento de produtos.
+
+Os usuários valorizam monitoramento detalhado de atividade física, qualidade do sono, e hábitos de saúde mental e hidratação. A personalização e a integração com aplicativos são aspectos essenciais para atrair consumidores.
+
+Para Bellabeat, há uma oportunidade clara de desenvolver produtos que não apenas monitorem esses aspectos de saúde, mas também os integrem de maneira mais holística e personalizada. Isso pode incluir funcionalidades que incentivem a atividade física regular, melhorem a qualidade do sono e promovam o bem-estar mental, alinhando-se às tendências identificadas.
+
+Recomenda-se que Bellabeat adapte suas campanhas de marketing para destacar esses diferenciais e benefícios específicos de seus produtos. Isso pode ser feito através de mensagens direcionadas que ressoem com os diferentes perfis de clientes identificados nos clusters, promovendo um estilo de vida saudável e integrado.
+
+
+
+
+
